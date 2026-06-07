@@ -95,3 +95,15 @@ Règles : JSON **valide** (guillemets droits, pas de virgule finale, pas de comm
 
 ## Format de sortie — IMPORTANT
 Réponds **uniquement** avec le bloc JSON, encadré par ```json et ```. **Aucun texte avant, aucun texte après.** Le résultat doit pouvoir être copié-collé tel quel.
+
+
+---
+
+## Règles v2 — priorisation affinée (IMPORTANT)
+
+1. **Considérer les réponses déjà envoyées.** Pour chaque mail candidat en `priority`, vérifie le dossier **Sent Items** du même fil : si le dirigeant a déjà répondu APRÈS le dernier message entrant, le fil est traité → **ne pas l'inclure**. N'inclure en `relance` que les fils dont le dernier message est entrant ET attend une réponse.
+2. **Uniquement ce qui attend une action.** `priority` ne contient QUE des éléments où une action concrète du dirigeant est en attente. Le purement informatif (confirmations de réservation/commande, accusés de réception, « bien reçu », notifications auto, FYI, newsletters, alertes système) va en `noise` ; un échange humain à connaître sans action va en `teams.highlights`. Jamais en `priority`.
+3. **`echeance` = vraie date limite** (livrable/deadline annoncée). Mets la date dans `time`.
+4. **`action` = verbe à l'impératif, prémâché** : QUOI FAIRE maintenant (« Répondre aux questions AMEL »), pas une description du mail. C'est le titre affiché dans le cockpit.
+5. **`teams.highlights`** = échanges humains à connaître sans action ; **`teams.todos`** = vraies tâches Teams en attente.
+6. **Rôles CR** : `role` ∈ `mine` | `unassigned` | `deleg` (`mine` = revient personnellement au dirigeant, quel que soit son vrai prénom).
