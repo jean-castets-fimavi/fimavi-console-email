@@ -66,7 +66,7 @@ Renvoie un objet **strictement** conforme à ce schéma (toutes les clés, même
   "generatedLabel": "<ex: lundi 25 mai 2026, 07:30>",
   "mailbox": "<adresse de la boîte connectée>",
   "mailboxIsBot": <true si c'est un compte de service/robot, sinon false>,
-  "brief": "<2 à 3 phrases, ton direct, tutoiement, qui aident le dirigeant à cadrer sa journée et à savoir par quoi commencer>",
+  "brief": "<1 à 2 phrases MAX = le point le plus important du jour. INTERDIT : tout méta-commentaire sur le tri ou ce qui a été retiré ; INTERDIT : le tiret cadratin « — » (emploie un point, une virgule ou deux-points).>",
   "kpis": { "urgences": <N>, "echeances": <N>, "relances": <N>, "mailsTotal": <nombre total de non lus, bruit inclus> },
   "priority": [
     { "cat": "urgence|echeance|relance|oubli|a_traiter", "sender": "...", "subject": "...", "time": "...", "prio": 1, "attachments": false, "why": "...", "action": "...", "webLink": "..." }
@@ -107,3 +107,5 @@ Réponds **uniquement** avec le bloc JSON, encadré par ```json et ```. **Aucun 
 4. **`action` = verbe à l'impératif, prémâché** : QUOI FAIRE maintenant (« Répondre aux questions AMEL »), pas une description du mail. C'est le titre affiché dans le cockpit.
 5. **`teams.highlights`** = échanges humains à connaître sans action ; **`teams.todos`** = vraies tâches Teams en attente.
 6. **Rôles CR** : `role` ∈ `mine` | `unassigned` | `deleg` (`mine` = revient personnellement au dirigeant, quel que soit son vrai prénom).
+
+7. **`brief`** = digest court, orienté action du jour, **sans méta-commentaire** sur le tri et **sans tiret cadratin « — »**. Les compteurs (échéances, relances, RDV…) sont calculés et affichés automatiquement : ne pas les répéter en texte.

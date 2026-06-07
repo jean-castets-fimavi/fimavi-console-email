@@ -37,8 +37,14 @@
   .hero h1{margin:1px 0 0;font-size:21px;font-weight:800;letter-spacing:-.025em;color:var(--navy);}
   .sync{font-size:11.5px;color:var(--faint);}
 
-  .brief{margin-top:14px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--violet);
-    border-radius:13px;padding:12px 15px;font-size:13.5px;line-height:1.55;box-shadow:var(--shadow);}
+  .digest{margin-top:14px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--violet);
+    border-radius:13px;padding:13px 16px;box-shadow:var(--shadow);}
+  .digest .dhead{font-size:15px;font-weight:740;color:var(--navy);letter-spacing:-.01em;line-height:1.45;}
+  .digest .dstats{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;}
+  .digest .stat{font-size:12px;font-weight:680;border-radius:999px;padding:4px 11px;background:#f5f4fc;color:var(--navy);border:1px solid var(--line);}
+  .digest .stat b{font-weight:830;}
+  .digest .stat.s-ech{background:#fdeede;color:var(--amber);border-color:#f6dcb8;}
+  .digest .stat.s-rel{background:#e8effe;color:var(--blue);border-color:#cfe0fb;}
 
   /* Tabs */
   .tabs{display:flex;gap:7px;margin:16px 0 16px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;}
@@ -124,7 +130,10 @@
 
   <div class="toast" id="toast"></div>
   <div class="notebar" id="noteBar" style="display:none"></div>
-  <div class="brief" id="briefText">—</div>
+  <div class="digest">
+    <div class="dhead" id="briefText"></div>
+    <div class="dstats" id="digestStats"></div>
+  </div>
 
   <div class="tabs" id="tabs" role="tablist">
     <button class="tab" role="tab" data-tab="todo" aria-selected="true">🎯 À faire <span class="badge" id="bTodo">0</span></button>
@@ -178,7 +187,7 @@ function score(e){ return (CAT[e.cat]?CAT[e.cat].w:0)*10+(e.prio||1); }
 function render(){
   const d=DATA||{};
   $("syncLabel").textContent="Données du "+(d.generatedLabel||"—")+" · "+(d.mailbox||"—");
-  $("briefText").textContent=d.brief||"—";
+  $("briefText").textContent=d.brief||"";
   if(d.mailboxIsBot){ const nb=$("noteBar"); nb.style.display="block";
     nb.innerHTML="<b>Note :</b> boîte connectée <b>"+esc(d.mailbox||"")+"</b> (compte de service). Connecte ta boîte perso pour un briefing complet."; }
 
@@ -193,10 +202,23 @@ function render(){
   $("bWeek").textContent=evs.length; $("bInfo").textContent=hi.length+noise.length;
   const urgent=pr.some(e=>e.cat==="echeance"||e.cat==="urgence");
   $("tabs").querySelector('[data-tab="todo"]').classList.toggle("warn",urgent);
+  renderDigest(pr,crPend,evs.length);
 
   renderTodo(pr); renderMeet(meetings,done); renderWeek(d.agenda||{}); renderInfo(d.teams||{},noise);
 }
 
+function renderDigest(pr,crPend,nRdv){
+  const urg=pr.filter(e=>e.cat==="urgence").length, ech=pr.filter(e=>e.cat==="echeance").length;
+  const rel=pr.filter(e=>e.cat==="relance").length, tra=pr.filter(e=>e.cat==="a_traiter"||e.cat==="oubli").length;
+  const s=[];
+  if(urg) s.push('<span class="stat s-ech"><b>'+urg+'</b> urgence'+(urg>1?'s':'')+'</span>');
+  if(ech) s.push('<span class="stat s-ech"><b>'+ech+'</b> échéance'+(ech>1?'s':'')+'</span>');
+  if(rel) s.push('<span class="stat s-rel"><b>'+rel+'</b> relance'+(rel>1?'s':'')+'</span>');
+  if(tra) s.push('<span class="stat"><b>'+tra+'</b> à traiter</span>');
+  if(crPend) s.push('<span class="stat"><b>'+crPend+'</b> tâches réunion</span>');
+  if(nRdv) s.push('<span class="stat"><b>'+nRdv+'</b> RDV cette semaine</span>');
+  $("digestStats").innerHTML=s.join("");
+}
 function renderTodo(pr){
   const box=$("p-todo");
   if(!pr.length){ box.innerHTML='<div class="empty"><span class="big">🎉</span>Rien à traiter. Boîte sous contrôle — bonne journée.</div>'; return; }
