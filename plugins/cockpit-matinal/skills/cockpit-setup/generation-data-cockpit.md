@@ -39,12 +39,12 @@ Regroupe les fils de discussion (même sujet) en **une seule entrée**. Pour cha
 Garde les e-mails dont l'objet contient « Récap réunion » ; écarte ceux contenant « Non remis », « TNR », « DRY_RUN ». Lis le contenu des 12 plus récents. **Ne conserve que les CR où le dirigeant est participant ou destinataire.**
 
 Dans le corps de chaque CR, repère la liste sous le titre **« Actions / Next Steps »** et celle sous **« Points de vigilance »**. Pour chaque action (souvent au format « Texte de l'action - Responsable ») :
-- responsable = le dirigeant → `role: "jean"` → va dans `myTasks` ;
+- responsable = le dirigeant → `role: "mine"` → va dans `myTasks` ;
 - aucun responsable indiqué → `role: "unassigned"` → va dans `myTasks` ;
 - responsable = une équipe / un pôle → `role: "deleg"` → va dans `myTasks` (le dirigeant pilote / délègue) ;
 - responsable = une personne nommée autre que le dirigeant → va dans `otherTasks` : `{label, assignee}`.
 
-(`role` est un **code interne** : utilise littéralement la valeur `"jean"` pour « revient personnellement au dirigeant », quel que soit son vrai nom.)
+(`role` est un **code interne** : utilise littéralement la valeur `"mine"` pour « revient personnellement au dirigeant », quel que soit son vrai nom.)
 
 `label` = reformulation claire à l'impératif, < 95 caractères. `id` = identifiant court et **stable** (8 à 12 caractères, dérivé d'un hash du texte brut de l'action + identifiant du CR) — il doit rester identique si la même action réapparaît à une exécution suivante. `late` = `true` si le CR date de 2 jours ou plus. Récupère aussi `title` (sujet de la réunion), `date` (libellé relatif), `webLink`, et la liste `vigil` (points de vigilance, texte brut).
 
@@ -76,7 +76,7 @@ Renvoie un objet **strictement** conforme à ce schéma (toutes les clés, même
     {
       "title": "...", "date": "...", "late": false, "webLink": "...",
       "vigil": [ "..." ],
-      "myTasks": [ { "id": "...", "label": "...", "role": "jean|unassigned|deleg", "assignee": "..." } ],
+      "myTasks": [ { "id": "...", "label": "...", "role": "mine|unassigned|deleg", "assignee": "..." } ],
       "otherTasks": [ { "label": "...", "assignee": "..." } ]
     }
   ],

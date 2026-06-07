@@ -5,7 +5,7 @@ routine de rafraîchissement), scopé sur son propre Microsoft 365.
 
 ## Usage
 ```
-/plugin marketplace add appsoluteown/fimavi-cowork-plugin
+/plugin marketplace add jean-castets-fimavi/fimavi-console-email
 /plugin install cockpit-matinal
 /cockpit-matinal:cockpit-setup
 ```

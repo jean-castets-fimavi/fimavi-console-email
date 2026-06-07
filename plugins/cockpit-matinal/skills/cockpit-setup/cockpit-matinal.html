@@ -185,7 +185,7 @@
 
   <section id="secCR">
     <div class="sec-head"><h2>✅ Tâches issues des CR de réunion</h2><span class="hint" id="crHint"></span></div>
-    <div class="sec-sub">Comptes-rendus de <b>ia@fimavi.com</b> — actions qui te reviennent (à faire, à piloter ou à déléguer). Coche ce qui est traité.</div>
+    <div class="sec-sub">Comptes-rendus de réunion — actions qui te reviennent (à faire, à piloter ou à déléguer). Coche ce qui est traité.</div>
     <div id="crBody"></div>
   </section>
 
@@ -264,7 +264,7 @@ const CAT_META={
 };
 const CAT_ORDER=["urgence","echeance","relance","oubli","a_traiter"];
 const ROLE_META={
-  jean:{cls:"",label:"pour toi"},
+  mine:{cls:"",label:"pour toi"},
   unassigned:{cls:"unassigned",label:"non attribuée"},
   pilote:{cls:"",label:"à piloter"},
   deleg:{cls:"deleg",label:"à déléguer"}
@@ -361,7 +361,7 @@ function renderCR(meetings,done){
     if(mine.length){
       mine.forEach(t=>{
         const ck=!!done[t.id];
-        const rm=ROLE_META[t.role]||ROLE_META.jean;
+        const rm=ROLE_META[t.role]||ROLE_META.mine;
         html+='<label class="task'+(ck?" done":"")+'">'+
           '<input type="checkbox" data-store="crDone" data-id="'+esc(t.id)+'"'+(ck?" checked":"")+'>'+
           '<span><span class="tlabel">'+esc(t.label)+'</span>'+

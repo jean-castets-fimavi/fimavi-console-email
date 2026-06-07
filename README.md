@@ -26,7 +26,7 @@ Tout est **scopé sur le compte M365 de chaque utilisateur** — aucune donnée 
 1. Connecter **son** Microsoft 365 : https://claude.ai/customize/connectors → Microsoft 365.
 2. Dans Cowork (ou Claude Code) :
    ```
-   /plugin marketplace add appsoluteown/fimavi-cowork-plugin
+   /plugin marketplace add jean-castets-fimavi/fimavi-console-email
    /plugin install cockpit-matinal
    /cockpit-matinal:cockpit-setup
    ```
