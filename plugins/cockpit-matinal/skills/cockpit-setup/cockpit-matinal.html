@@ -88,8 +88,8 @@
   .latebadge{font-size:10px;font-weight:750;color:#fff;background:var(--pink);border-radius:999px;padding:1px 8px;margin-left:6px;}
   .task{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px dashed var(--line);}
   .task:first-of-type{border-top:1px solid var(--line);margin-top:9px;}
-  .task input{margin-top:2px;width:17px;height:17px;accent-color:var(--violet);flex:none;cursor:pointer;}
-  .task .tlabel{font-size:13.5px;} .task.done .tlabel{text-decoration:line-through;color:var(--faint);}
+  .task .bullet{margin-top:6px;width:6px;height:6px;border-radius:50%;background:var(--violet);flex:none;}
+  .task .tlabel{font-size:13.5px;}
   .owntag{font-size:10px;font-weight:750;border-radius:5px;padding:1px 6px;margin-left:6px;white-space:nowrap;}
   .o-mine{background:var(--violet-soft);color:var(--violet-d);} .o-unassigned{background:#fff3e0;color:var(--amber);} .o-deleg{background:#e8f0fe;color:var(--blue);}
   .crfoot{margin-top:10px;display:flex;gap:12px;align-items:center;font-size:11.5px;color:var(--faint);flex-wrap:wrap;}
@@ -191,10 +191,9 @@ function render(){
   if(d.mailboxIsBot){ const nb=$("noteBar"); nb.style.display="block";
     nb.innerHTML="<b>Note :</b> boîte connectée <b>"+esc(d.mailbox||"")+"</b> (compte de service). Connecte ta boîte perso pour un briefing complet."; }
 
-  const done=store.get("crDone",{});
   const pr=(d.priority||[]).slice().sort((a,b)=>score(b)-score(a));
   const meetings=d.crMeetings||[];
-  let crPend=0; meetings.forEach(m=>(m.myTasks||[]).forEach(t=>{ if(!done[t.id]) crPend++; }));
+  let crPend=0; meetings.forEach(m=>{ crPend+=(m.myTasks||[]).length; });
   const evs=(d.agenda||{}).events||[];
   const hi=((d.teams||{}).highlights)||[]; const noise=d.noise||[];
 
@@ -204,7 +203,7 @@ function render(){
   $("tabs").querySelector('[data-tab="todo"]').classList.toggle("warn",urgent);
   renderDigest(pr,crPend,evs.length);
 
-  renderTodo(pr); renderMeet(meetings,done); renderWeek(d.agenda||{}); renderInfo(d.teams||{},noise);
+  renderTodo(pr); renderMeet(meetings); renderWeek(d.agenda||{}); renderInfo(d.teams||{},noise);
 }
 
 function renderDigest(pr,crPend,nRdv){
@@ -234,33 +233,28 @@ function renderTodo(pr){
   }).join("");
 }
 
-function renderMeet(meetings,done){
+function renderMeet(meetings){
   const box=$("p-meet"); let shown=0,html="";
   meetings.forEach(m=>{
     const mine=m.myTasks||[],others=m.otherTasks||[]; if(!mine.length&&!others.length) return; shown++;
-    const pendMine=mine.filter(t=>!done[t.id]).length; const late=m.late&&pendMine>0;
+    const late=m.late&&mine.length;
     html+='<div class="crcard'+(late?" late":"")+'"><div class="crtop"><span class="crtitle">'+esc(m.title)+
       (late?'<span class="latebadge">EN RETARD</span>':'')+'</span><span class="crdate">'+esc(m.date||"")+'</span></div>';
-    mine.forEach(t=>{ const ck=!!done[t.id]; const rm=ROLE[t.role]||ROLE.mine;
-      html+='<label class="task'+(ck?" done":"")+'"><input type="checkbox" data-id="'+esc(t.id)+'"'+(ck?" checked":"")+'>'+
-      '<span><span class="tlabel">'+esc(t.label)+'</span><span class="owntag '+rm.cls+'">'+rm.label+'</span>'+
-      (t.assignee?'<div class="meta">Resp. : '+esc(t.assignee)+'</div>':'')+'</span></label>'; });
+    mine.forEach(t=>{ const rm=ROLE[t.role]||ROLE.mine;
+      html+='<div class="task"><span class="bullet"></span><span><span class="tlabel">'+esc(t.label)+'</span>'+
+      '<span class="owntag '+rm.cls+'">'+rm.label+'</span>'+
+      (t.assignee?'<div class="meta">Resp. : '+esc(t.assignee)+'</div>':'')+'</span></div>'; });
     if(!mine.length) html+='<div class="subtle">Aucune action ne te revient directement.</div>';
-    html+='<div class="crfoot">'+(m.webLink?'<a href="'+esc(m.webLink)+'" target="_blank" rel="noopener">Voir le CR ↗</a>':'')+
-      '<span>'+mine.length+' pour toi · '+others.length+' autres</span></div>';
-    if(others.length) html+='<details><summary>Voir les '+others.length+' action(s) déléguées</summary><ul class="vigil">'+
-      others.map(a=>'<li>'+esc(a.label)+(a.assignee?' — <i>'+esc(a.assignee)+'</i>':'')+'</li>').join("")+'</ul></details>';
-    if(m.vigil&&m.vigil.length) html+='<details><summary>⚠️ '+m.vigil.length+' point(s) de vigilance</summary><ul class="vigil">'+
+    html+='<div class="crfoot">'+(m.webLink?'<a href="'+esc(m.webLink)+'" target="_blank" rel="noopener">Voir le CR \u2197</a>':'')+
+      '<span>'+mine.length+' pour toi \u00b7 '+others.length+' autres</span></div>';
+    if(others.length) html+='<details><summary>Voir les '+others.length+' action(s) d\u00e9l\u00e9gu\u00e9es</summary><ul class="vigil">'+
+      others.map(a=>'<li>'+esc(a.label)+(a.assignee?' \u00b7 <i>'+esc(a.assignee)+'</i>':'')+'</li>').join("")+'</ul></details>';
+    if(m.vigil&&m.vigil.length) html+='<details><summary>\u26a0\ufe0f '+m.vigil.length+' point(s) de vigilance</summary><ul class="vigil">'+
       m.vigil.map(v=>'<li>'+esc(v)+'</li>').join("")+'</ul></details>';
     html+='</div>';
   });
-  box.innerHTML=shown?html:'<div class="empty"><span class="big">📋</span>Aucune tâche de réunion en attente.</div>';
-  box.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.addEventListener("change",()=>{
-    const dd=store.get("crDone",{}); if(cb.checked) dd[cb.dataset.id]=1; else delete dd[cb.dataset.id]; store.set("crDone",dd);
-    render(); show("meet");
-  }));
+  box.innerHTML=shown?html:'<div class="empty"><span class="big">\ud83d\udccb</span>Aucune t\u00e2che de r\u00e9union en attente.</div>';
 }
-
 function renderWeek(ag){
   const box=$("p-week");
   if(!ag.available){ box.innerHTML='<div class="empty">'+esc(ag.note||"Agenda non disponible.")+'</div>'; return; }
