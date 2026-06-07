@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cockpit Matinal — Briefing du jour</title>
+<style>
+  :root{
+    color-scheme: light;
+    --bg:#f3f3f7; --card:#ffffff; --ink:#1e1e2d; --muted:#6b6b80;
+    --line:#e7e7ef; --indigo:#302e59; --indigo-soft:#ecebf4;
+    --pink:#fa2560; --amber:#d97a00; --blue:#2563eb; --slate:#64748b;
+    --green:#1f9d57; --teams:#5b5fc7; --shadow:0 1px 3px rgba(20,20,40,.07),0 6px 18px rgba(20,20,40,.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:18px 16px 48px;}
+  a{color:var(--indigo);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+
+  header.top{
+    background:linear-gradient(135deg,#302e59 0%,#403c75 60%,#4a3f7e 100%);
+    color:#fff;border-radius:16px;padding:20px 22px;box-shadow:var(--shadow);
+  }
+  header.top .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.72;font-weight:600;}
+  header.top h1{margin:4px 0 2px;font-size:21px;font-weight:700;letter-spacing:-.01em;}
+  header.top .sub{font-size:13px;opacity:.85;}
+  header.top .meta{display:flex;flex-wrap:wrap;gap:8px 10px;margin-top:13px;font-size:12px;align-items:center;}
+  header.top .meta span.tag{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);
+    padding:4px 9px;border-radius:999px;}
+  .dot{width:7px;height:7px;border-radius:50%;display:inline-block;background:#7CFFB2;}
+  .refresh{margin-left:auto;background:#fff;color:var(--indigo);border:0;border-radius:999px;
+    padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .refresh:hover{background:#f0f0fa;}
+  .refresh:disabled{opacity:.6;cursor:default;}
+
+  .brief{
+    background:var(--card);border:1px solid var(--line);border-left:4px solid var(--indigo);
+    border-radius:12px;padding:14px 16px;margin-top:14px;box-shadow:var(--shadow);
+  }
+  .brief h2{margin:0 0 5px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+  .brief p{margin:0;font-size:14.5px;line-height:1.55;}
+
+  .kpis{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;}
+  .kpi{
+    flex:1 1 120px;background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:12px 13px;box-shadow:var(--shadow);position:relative;overflow:hidden;
+  }
+  .kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--slate);}
+  .kpi.urg::before{background:var(--pink);}
+  .kpi.ech::before{background:var(--amber);}
+  .kpi.rel::before{background:var(--blue);}
+  .kpi.cr::before{background:var(--indigo);}
+  .kpi.tms::before{background:var(--teams);}
+  .kpi.mail::before{background:var(--green);}
+  .kpi .val{font-size:23px;font-weight:750;letter-spacing:-.02em;line-height:1.1;}
+  .kpi .lab{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .kpi .val small{font-size:13px;color:var(--muted);font-weight:600;}
+
+  section{margin-top:22px;}
+  .sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px;}
+  .sec-head h2{margin:0;font-size:16px;font-weight:700;letter-spacing:-.01em;}
+  .sec-head .hint{font-size:12px;color:var(--muted);}
+  .sec-sub{font-size:12.5px;color:var(--muted);margin:0 0 12px;}
+
+  .cat{margin-bottom:14px;}
+  .cat-title{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px;}
+  .cat-title .pill{font-size:11px;font-weight:700;color:#fff;border-radius:999px;padding:1px 8px;}
+  .cat-urg .pill{background:var(--pink);} .cat-urg .cat-title{color:var(--pink);}
+  .cat-ech .pill{background:var(--amber);} .cat-ech .cat-title{color:var(--amber);}
+  .cat-rel .pill{background:var(--blue);} .cat-rel .cat-title{color:var(--blue);}
+  .cat-oub .pill{background:var(--slate);} .cat-oub .cat-title{color:var(--slate);}
+  .cat-tra .pill{background:var(--indigo);} .cat-tra .cat-title{color:var(--indigo);}
+
+  .mailcard{
+    background:var(--card);border:1px solid var(--line);border-radius:11px;
+    padding:11px 13px;margin-bottom:8px;box-shadow:var(--shadow);border-left:4px solid var(--slate);
+  }
+  .mailcard.p-urg{border-left-color:var(--pink);}
+  .mailcard.p-ech{border-left-color:var(--amber);}
+  .mailcard.p-rel{border-left-color:var(--blue);}
+  .mailcard.p-oub{border-left-color:var(--slate);}
+  .mailcard.p-tra{border-left-color:var(--indigo);}
+  .mailcard .row1{display:flex;justify-content:space-between;gap:10px;align-items:baseline;}
+  .mailcard .sender{font-weight:700;font-size:13px;}
+  .mailcard .time{font-size:11.5px;color:var(--muted);white-space:nowrap;}
+  .mailcard .subj{font-size:13.5px;margin:3px 0 4px;font-weight:600;}
+  .mailcard .why{font-size:12.5px;color:#4a4a5e;margin:2px 0 6px;}
+  .mailcard .foot{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+  .chip{font-size:11px;border-radius:6px;padding:2px 8px;background:var(--indigo-soft);color:var(--indigo);font-weight:600;}
+  .chip.action{background:#eef6f0;color:var(--green);}
+  .chip.ghost{background:transparent;color:var(--muted);border:1px solid var(--line);}
+  .openlink{font-size:12px;font-weight:600;margin-left:auto;}
+
+  .crcard{background:var(--card);border:1px solid var(--line);border-radius:11px;
+    padding:12px 14px;margin-bottom:9px;box-shadow:var(--shadow);}
+  .crcard.late{border-left:4px solid var(--pink);}
+  .crcard.teams{border-left:4px solid var(--teams);}
+  .crcard .crtop{display:flex;justify-content:space-between;gap:10px;align-items:baseline;}
+  .crcard .crtitle{font-weight:700;font-size:13.5px;}
+  .crcard .crdate{font-size:11.5px;color:var(--muted);white-space:nowrap;}
+  .crcard .latebadge{font-size:10.5px;font-weight:700;color:#fff;background:var(--pink);
+    border-radius:999px;padding:1px 8px;margin-left:6px;}
+  .task{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-top:1px dashed var(--line);}
+  .task:first-of-type{border-top:1px solid var(--line);margin-top:8px;}
+  .task input{margin-top:2px;width:16px;height:16px;accent-color:var(--indigo);flex:none;cursor:pointer;}
+  .task .tlabel{font-size:13px;}
+  .task .tmeta{font-size:11px;color:var(--muted);margin-top:2px;}
+  .task.done .tlabel{text-decoration:line-through;color:var(--muted);}
+  .owntag{font-size:10px;font-weight:700;border-radius:5px;padding:1px 6px;margin-left:6px;
+    background:var(--indigo-soft);color:var(--indigo);white-space:nowrap;}
+  .owntag.unassigned{background:#fff3e0;color:var(--amber);}
+  .owntag.deleg{background:#e8f0fe;color:var(--blue);}
+  .owntag.teams{background:#e9e9f8;color:var(--teams);}
+  .crcard .crfoot{margin-top:9px;display:flex;gap:12px;align-items:center;font-size:11.5px;flex-wrap:wrap;}
+  .crcard details{margin-top:8px;}
+  .crcard details summary{font-size:11.5px;color:var(--muted);cursor:pointer;}
+  .crcard .vigil{font-size:12px;color:#4a4a5e;margin:6px 0 0;padding-left:18px;}
+  .crcard .vigil li{margin:3px 0;}
+
+  .agitem{display:flex;gap:11px;background:var(--card);border:1px solid var(--line);
+    border-radius:10px;padding:9px 12px;margin-bottom:7px;box-shadow:var(--shadow);}
+  .agitem .agtime{font-weight:750;font-size:12.5px;color:var(--indigo);white-space:nowrap;min-width:60px;}
+  .agitem .agsubj{font-size:13px;font-weight:600;}
+  .agitem .agloc{font-size:11.5px;color:var(--muted);}
+
+  .empty{background:var(--card);border:1px dashed var(--line);border-radius:11px;
+    padding:16px;text-align:center;color:var(--muted);font-size:13px;}
+  .empty .big{font-size:22px;display:block;margin-bottom:4px;}
+  .notebar{background:#fff8e8;border:1px solid #f3e2b8;border-radius:10px;
+    padding:9px 12px;margin-top:12px;font-size:12px;color:#7a5b00;}
+  .notebar b{color:#5e4600;}
+  .toast{background:#eef6f0;border:1px solid #bfe3cd;border-radius:10px;padding:9px 12px;
+    margin-top:12px;font-size:12.5px;color:#0f6b3c;display:none;}
+
+  footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);
+    font-size:11.5px;color:var(--muted);line-height:1.6;}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;}
+  .legend span{display:inline-flex;align-items:center;gap:5px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Groupe FIMAVI · Cockpit de direction</div>
+    <h1>Briefing Matinal</h1>
+    <div class="sub" id="todayLabel">—</div>
+    <div class="meta">
+      <span class="tag"><span class="dot"></span><span id="syncLabel">—</span></span>
+      <span class="tag" id="mailboxLabel">Boîte : —</span>
+      <button class="refresh" id="refreshBtn" title="Relance la routine qui réinterroge Microsoft 365">🔄 Rafraîchir</button>
+    </div>
+  </header>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="brief" id="briefBox">
+    <h2>Le mot du jour</h2>
+    <p id="briefText">—</p>
+  </div>
+
+  <div class="kpis" id="kpis">
+    <div class="kpi urg"><div class="val" id="kUrg">–</div><div class="lab">Urgences</div></div>
+    <div class="kpi ech"><div class="val" id="kEch">–</div><div class="lab">Échéances</div></div>
+    <div class="kpi rel"><div class="val" id="kRel">–</div><div class="lab">Relances à faire</div></div>
+    <div class="kpi cr"><div class="val" id="kCr">–</div><div class="lab">Tâches CR en attente</div></div>
+    <div class="kpi tms"><div class="val" id="kTeams">–</div><div class="lab">TODO Teams</div></div>
+    <div class="kpi mail"><div class="val" id="kMail">–</div><div class="lab">Non lus pertinents</div></div>
+  </div>
+
+  <div class="notebar" id="noteBar" style="display:none"></div>
+
+  <section id="secPriority">
+    <div class="sec-head"><h2>📨 À traiter en priorité</h2><span class="hint" id="priorityHint"></span></div>
+    <div class="sec-sub">Mails non lus filtrés du bruit, classés par nature d'action.</div>
+    <div id="priorityBody"></div>
+  </section>
+
+  <section id="secCR">
+    <div class="sec-head"><h2>✅ Tâches issues des CR de réunion</h2><span class="hint" id="crHint"></span></div>
+    <div class="sec-sub">Comptes-rendus de <b>ia@fimavi.com</b> — actions qui te reviennent (à faire, à piloter ou à déléguer). Coche ce qui est traité.</div>
+    <div id="crBody"></div>
+  </section>
+
+  <section id="secTeams">
+    <div class="sec-head"><h2>💬 TODO détectés dans Teams</h2><span class="hint" id="teamsHint"></span></div>
+    <div class="sec-sub">Tâches et engagements repérés dans tes échanges Teams des 7 derniers jours.</div>
+    <div id="teamsBody"></div>
+  </section>
+
+  <section id="secAgenda">
+    <div class="sec-head"><h2>📅 RDV de la semaine</h2><span class="hint" id="agendaHint"></span></div>
+    <div id="agendaBody"></div>
+  </section>
+
+  <section id="secNoise">
+    <div class="sec-head"><h2>🔕 Bruit écarté</h2><span class="hint" id="noiseHint"></span></div>
+    <div id="noiseBody"></div>
+  </section>
+
+  <footer>
+    <div><b>Source :</b> Microsoft 365 (Outlook, Teams, Agenda). Ce tableau affiche un instantané préparé par la routine Cowork <b>« Cockpit Matinal »</b>.</div>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--pink)"></span>Urgence</span>
+      <span><span class="dot" style="background:var(--amber)"></span>Échéance</span>
+      <span><span class="dot" style="background:var(--blue)"></span>Relance</span>
+      <span><span class="dot" style="background:var(--slate)"></span>Oubli possible</span>
+      <span><span class="dot" style="background:var(--indigo)"></span>À traiter</span>
+    </div>
+    <div id="footNote" style="margin-top:6px;"></div>
+  </footer>
+
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   COCKPIT MATINAL — Live Artifact (FIMAVI)
+   Affichage statique alimenté par le bloc DATA ci-dessous,
+   régénéré par la routine Cowork « cockpit-matinal-refresh ».
+   NE PAS modifier le format des marqueurs DATA_START / DATA_END.
+   ============================================================ */
+
+const REFRESH_TASK_ID = "cockpit-matinal-refresh";
+
+const DATA = /*DATA_START*/{
+  "generatedAt": "",
+  "generatedLabel": "en attente de la première synchro",
+  "mailbox": "",
+  "mailboxIsBot": false,
+  "brief": "Bienvenue dans ton Cockpit Matinal. Lance la routine « cockpit-matinal » (ou clique sur « Rafraîchir ») pour générer ton premier briefing à partir de ta boîte Microsoft 365.",
+  "kpis": { "urgences": 0, "echeances": 0, "relances": 0, "mailsTotal": 0 },
+  "priority": [],
+  "noise": [],
+  "crMeetings": [],
+  "teams": { "available": false, "note": "Première synchro non encore lancée.", "todos": [], "highlights": [] },
+  "agenda": { "available": false, "note": "Première synchro non encore lancée.", "events": [] }
+}/*DATA_END*/;
+
+/* ============================================================ */
+const $ = id => document.getElementById(id);
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+const store = {
+  get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+};
+const MOIS=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const JOURS=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+function fmtToday(){ const d=new Date(); return JOURS[d.getDay()]+" "+d.getDate()+" "+MOIS[d.getMonth()]+" "+d.getFullYear(); }
+
+const CAT_META={
+  urgence:{cls:"cat-urg",pcls:"p-urg",label:"Urgences",ic:"🔴"},
+  echeance:{cls:"cat-ech",pcls:"p-ech",label:"Échéances",ic:"🟠"},
+  relance:{cls:"cat-rel",pcls:"p-rel",label:"Relances à faire",ic:"🔵"},
+  oubli:{cls:"cat-oub",pcls:"p-oub",label:"Oublis possibles",ic:"⚪"},
+  a_traiter:{cls:"cat-tra",pcls:"p-tra",label:"À traiter",ic:"🟣"}
+};
+const CAT_ORDER=["urgence","echeance","relance","oubli","a_traiter"];
+const ROLE_META={
+  jean:{cls:"",label:"pour toi"},
+  unassigned:{cls:"unassigned",label:"non attribuée"},
+  pilote:{cls:"",label:"à piloter"},
+  deleg:{cls:"deleg",label:"à déléguer"}
+};
+
+function render(){
+  const d=DATA||{};
+  $("todayLabel").textContent="Briefing du "+(d.generatedLabel? d.generatedLabel.split(",")[0] : fmtToday());
+  $("syncLabel").textContent="Données du "+(d.generatedLabel||"—");
+  $("mailboxLabel").textContent="Boîte : "+(d.mailbox||"—");
+  $("briefText").textContent=d.brief||"—";
+  $("footNote").textContent="Instantané généré le "+(d.generatedLabel||"—")+
+    ". Pour réactualiser, clique sur « Rafraîchir » (la routine réinterroge Microsoft 365).";
+
+  if(d.mailboxIsBot){
+    const nb=$("noteBar"); nb.style.display="block";
+    nb.innerHTML="<b>Note :</b> la boîte connectée est <b>"+esc(d.mailbox||"")+
+      "</b> (compte des comptes-rendus). Le suivi des CR est complet ; pour le digest de "+
+      "<b>tes</b> mails, l'agenda et Teams, connecte ta boîte personnelle au connecteur Microsoft 365.";
+  }
+
+  const done=store.get("crDone",{});
+  const teamsDone=store.get("teamsDone",{});
+  const k=d.kpis||{};
+  const pr=d.priority||[];
+  let crPend=0;
+  (d.crMeetings||[]).forEach(m=>(m.myTasks||[]).forEach(t=>{ if(!done[t.id]) crPend++; }));
+  const tm=d.teams||{available:false,todos:[]};
+  let tmPend=0;
+  (tm.todos||[]).forEach(t=>{ if(!teamsDone[t.id]) tmPend++; });
+
+  $("kUrg").textContent=k.urgences!=null?k.urgences:pr.filter(e=>e.cat==="urgence").length;
+  $("kEch").textContent=k.echeances!=null?k.echeances:pr.filter(e=>e.cat==="echeance").length;
+  $("kRel").textContent=k.relances!=null?k.relances:pr.filter(e=>e.cat==="relance").length;
+  $("kCr").textContent=crPend;
+  $("kTeams").textContent=tm.available?tmPend:"—";
+  $("kMail").innerHTML=pr.length+' <small>/ '+(k.mailsTotal!=null?k.mailsTotal:pr.length)+'</small>';
+
+  renderPriority(pr,k);
+  renderCR(d.crMeetings||[],done);
+  renderTeams(tm,teamsDone);
+  renderAgenda(d.agenda||{available:false,events:[]});
+  renderNoise(d.noise||[]);
+}
+
+function renderPriority(pr,k){
+  const box=$("priorityBody");
+  const total=(k&&k.mailsTotal!=null)?k.mailsTotal:pr.length;
+  $("priorityHint").textContent=total+" non lus · "+pr.length+" pertinents";
+  if(!pr.length){
+    box.innerHTML='<div class="empty"><span class="big">✨</span>Aucun mail non lu pertinent. Boîte sous contrôle — bonne journée.</div>';
+    return;
+  }
+  let html="";
+  CAT_ORDER.forEach(cat=>{
+    const list=pr.filter(e=>e.cat===cat).sort((a,b)=>(b.prio||1)-(a.prio||1));
+    if(!list.length) return;
+    const m=CAT_META[cat];
+    html+='<div class="cat '+m.cls+'"><div class="cat-title">'+m.ic+' '+m.label+
+      ' <span class="pill">'+list.length+'</span></div>';
+    list.forEach(e=>{
+      const m2=CAT_META[e.cat]||CAT_META.a_traiter;
+      const link=e.webLink?'<a class="openlink" href="'+esc(e.webLink)+'" target="_blank" rel="noopener">Ouvrir ↗</a>':"";
+      let chips="";
+      if(e.prio>=3) chips+='<span class="chip" style="background:#fdeaef;color:var(--pink)">Prioritaire</span>';
+      if(e.attachments) chips+='<span class="chip ghost">📎 PJ</span>';
+      if(e.action) chips+='<span class="chip action">→ '+esc(e.action)+'</span>';
+      html+='<div class="mailcard '+m2.pcls+'">'+
+        '<div class="row1"><span class="sender">'+esc(e.sender)+'</span>'+
+        '<span class="time">'+esc(e.time||"")+'</span></div>'+
+        '<div class="subj">'+esc(e.subject||"(sans objet)")+'</div>'+
+        (e.why?'<div class="why">'+esc(e.why)+'</div>':'')+
+        '<div class="foot">'+chips+link+'</div></div>';
+    });
+    html+='</div>';
+  });
+  box.innerHTML=html;
+}
+
+function renderCR(meetings,done){
+  const box=$("crBody");
+  let shown=0, pend=0, html="";
+  meetings.forEach(m=>{
+    const mine=m.myTasks||[], others=m.otherTasks||[];
+    if(!mine.length && !others.length) return;
+    shown++;
+    const pendMine=mine.filter(t=>!done[t.id]).length;
+    pend+=pendMine;
+    const late=m.late && pendMine>0;
+    html+='<div class="crcard'+(late?" late":"")+'">'+
+      '<div class="crtop"><span class="crtitle">'+esc(m.title)+
+      (late?'<span class="latebadge">EN RETARD</span>':'')+'</span>'+
+      '<span class="crdate">'+esc(m.date||"")+'</span></div>';
+    if(mine.length){
+      mine.forEach(t=>{
+        const ck=!!done[t.id];
+        const rm=ROLE_META[t.role]||ROLE_META.jean;
+        html+='<label class="task'+(ck?" done":"")+'">'+
+          '<input type="checkbox" data-store="crDone" data-id="'+esc(t.id)+'"'+(ck?" checked":"")+'>'+
+          '<span><span class="tlabel">'+esc(t.label)+'</span>'+
+          '<span class="owntag '+rm.cls+'">'+rm.label+'</span>'+
+          (t.assignee?'<div class="tmeta">Responsable désigné : '+esc(t.assignee)+'</div>':'')+
+          '</span></label>';
+      });
+    }else{
+      html+='<div class="tmeta" style="margin-top:8px;">Aucune action ne te revient directement.</div>';
+    }
+    let foot='<div class="crfoot">';
+    if(m.webLink) foot+='<a href="'+esc(m.webLink)+'" target="_blank" rel="noopener">Voir le CR ↗</a>';
+    foot+='<span style="color:var(--muted)">'+mine.length+' pour toi · '+others.length+' autres</span></div>';
+    html+=foot;
+    if(others.length){
+      html+='<details><summary>Voir les '+others.length+' action(s) confiées à d\'autres</summary>'+
+        '<ul class="vigil">'+others.map(a=>'<li>'+esc(a.label)+
+        (a.assignee?' — <i>'+esc(a.assignee)+'</i>':'')+'</li>').join("")+'</ul></details>';
+    }
+    if(m.vigil&&m.vigil.length){
+      html+='<details><summary>⚠️ '+m.vigil.length+' point(s) de vigilance</summary>'+
+        '<ul class="vigil">'+m.vigil.map(v=>'<li>'+esc(v)+'</li>').join("")+'</ul></details>';
+    }
+    html+='</div>';
+  });
+  $("crHint").textContent=shown+" réunion(s) · "+pend+" tâche(s) ouverte(s)";
+  if(!shown){
+    box.innerHTML='<div class="empty"><span class="big">📋</span>Aucune tâche en attente issue des CR. Tout est à jour.</div>';
+  }else{
+    box.innerHTML=html;
+  }
+  bindChecks(box);
+}
+
+function renderTeams(tm,done){
+  const box=$("teamsBody");
+  if(!tm.available){
+    $("teamsHint").textContent="indisponible";
+    box.innerHTML='<div class="empty">'+esc(tm.note||"Échanges Teams indisponibles pour cette boîte.")+'</div>';
+    return;
+  }
+  const todos=tm.todos||[], hi=tm.highlights||[];
+  const pend=todos.filter(t=>!done[t.id]).length;
+  $("teamsHint").textContent=todos.length+" TODO · "+hi.length+" échange(s) clé(s)";
+  if(!todos.length && !hi.length){
+    box.innerHTML='<div class="empty"><span class="big">💬</span>Aucun TODO détecté dans tes échanges Teams des 7 derniers jours.</div>';
+    return;
+  }
+  let html='<div class="crcard teams">';
+  if(todos.length){
+    html+='<div class="crtop"><span class="crtitle">À faire d\'après Teams</span>'+
+      '<span class="crdate">'+pend+' en attente</span></div>';
+    todos.forEach(t=>{
+      const ck=!!done[t.id];
+      html+='<label class="task'+(ck?" done":"")+'">'+
+        '<input type="checkbox" data-store="teamsDone" data-id="'+esc(t.id)+'"'+(ck?" checked":"")+'>'+
+        '<span><span class="tlabel">'+esc(t.label)+'</span>'+
+        '<span class="owntag teams">Teams</span>'+
+        '<div class="tmeta">'+esc([t.from,t.context,t.date].filter(Boolean).join(" · "))+'</div>'+
+        (t.webLink?'<div class="tmeta"><a href="'+esc(t.webLink)+'" target="_blank" rel="noopener">Ouvrir la conversation ↗</a></div>':'')+
+        '</span></label>';
+    });
+  }else{
+    html+='<div class="crtop"><span class="crtitle">Échanges Teams</span></div>'+
+      '<div class="tmeta" style="margin-top:8px;">Aucun TODO explicite détecté.</div>';
+  }
+  if(hi.length){
+    html+='<details><summary>'+hi.length+' échange(s) à connaître</summary><ul class="vigil">'+
+      hi.map(h=>'<li><b>'+esc(h.from||"")+'</b>'+(h.context?' ('+esc(h.context)+')':'')+
+      ' — '+esc(h.snippet||"")+(h.webLink?' <a href="'+esc(h.webLink)+'" target="_blank" rel="noopener">↗</a>':'')+'</li>').join("")+
+      '</ul></details>';
+  }
+  html+='</div>';
+  box.innerHTML=html;
+  bindChecks(box);
+}
+
+function renderAgenda(ag){
+  const box=$("agendaBody");
+  if(!ag.available){
+    $("agendaHint").textContent="indisponible";
+    box.innerHTML='<div class="empty">'+esc(ag.note||"Agenda non disponible pour la boîte connectée.")+'</div>';
+    return;
+  }
+  const evs=ag.events||[];
+  if(!evs.length){
+    $("agendaHint").textContent="0 RDV";
+    box.innerHTML='<div class="empty"><span class="big">🗓️</span>Aucun rendez-vous aujourd\'hui — journée dégagée.</div>';
+    return;
+  }
+  $("agendaHint").textContent=evs.length+" RDV";
+  box.innerHTML=evs.map(e=>'<div class="agitem"><span class="agtime">'+esc(e.time||"—")+'</span>'+
+    '<span><span class="agsubj">'+esc(e.subject||"(sans titre)")+'</span>'+
+    (e.location?'<div class="agloc">📍 '+esc(e.location)+'</div>':'')+'</span></div>').join("");
+}
+
+function renderNoise(noise){
+  const box=$("noiseBody");
+  if(!noise.length){ $("noiseHint").textContent="0 message"; box.innerHTML='<div class="empty">Aucun bruit détecté.</div>'; return; }
+  $("noiseHint").textContent=noise.length+" message(s) mis de côté";
+  const open=store.get("noiseOpen",false);
+  const inner=noise.map(e=>'<div style="padding:6px 0;border-top:1px dashed var(--line);font-size:12.5px;">'+
+    '<b>'+esc(e.sender)+'</b> — '+esc(e.subject)+'</div>').join("");
+  box.innerHTML='<details id="noiseDetails"'+(open?" open":"")+
+    '><summary style="cursor:pointer;font-size:12.5px;color:var(--muted)">'+
+    'Afficher les '+noise.length+' messages filtrés (newsletters, notifications…)</summary>'+
+    '<div style="background:var(--card);border:1px solid var(--line);border-radius:11px;padding:4px 13px 10px;margin-top:8px;">'+
+    inner+'</div></details>';
+  const dt=$("noiseDetails");
+  if(dt) dt.addEventListener("toggle",()=>store.set("noiseOpen",dt.open));
+}
+
+function bindChecks(box){
+  box.querySelectorAll('input[type=checkbox][data-store]').forEach(cb=>{
+    cb.addEventListener("change",()=>{
+      const key=cb.dataset.store;
+      const dd=store.get(key,{});
+      if(cb.checked) dd[cb.dataset.id]=Date.now(); else delete dd[cb.dataset.id];
+      store.set(key,dd);
+      render();
+    });
+  });
+}
+
+/* ---- bouton Rafraîchir : relance la routine Cowork ---- */
+function showToast(msg,color){
+  const t=$("toast"); t.style.display="block"; t.textContent=msg;
+  if(color==="warn"){ t.style.background="#fff8e8"; t.style.borderColor="#f3e2b8"; t.style.color="#7a5b00"; }
+}
+$("refreshBtn").addEventListener("click",async function(){
+  const btn=this;
+  if(!(window.cowork && typeof window.cowork.runScheduledTask==="function")){
+    showToast("Pour rafraîchir : lance la routine « Cockpit Matinal » depuis tes tâches planifiées, puis recharge ce tableau.","warn");
+    return;
+  }
+  btn.disabled=true; btn.textContent="⏳ Routine lancée…";
+  try{
+    await window.cowork.runScheduledTask(REFRESH_TASK_ID);
+    showToast("Routine lancée — elle réinterroge Microsoft 365. Recharge ce tableau dans une minute (bouton ↻ en haut du panneau).");
+  }catch(e){
+    showToast("Impossible de lancer la routine automatiquement. Lance-la manuellement depuis tes tâches planifiées.","warn");
+  }
+  btn.textContent="🔄 Rafraîchir";
+  setTimeout(()=>{ btn.disabled=false; },4000);
+});
+
+render();
+</script>
+</body>
+</html>

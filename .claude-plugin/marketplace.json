@@ -1,0 +1,16 @@
+{
+  "name": "fimavi-cowork",
+  "owner": {
+    "name": "Groupe FIMAVI"
+  },
+  "metadata": {
+    "description": "Marketplace interne FIMAVI pour Claude Cowork / Claude Code."
+  },
+  "plugins": [
+    {
+      "name": "cockpit-matinal",
+      "source": "./plugins/cockpit-matinal",
+      "description": "Cockpit Matinal — briefing Microsoft 365 quotidien (Live Artifact + routine matinale), scopé sur le compte M365 de chaque utilisateur."
+    }
+  ]
+}

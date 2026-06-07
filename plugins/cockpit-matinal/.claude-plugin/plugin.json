@@ -1,0 +1,9 @@
+{
+  "name": "cockpit-matinal",
+  "description": "Installe le Cockpit Matinal : un Live Artifact qui synthétise ta boîte Microsoft 365 (mails non traités classés par priorité, tâches issues des CR de réunion, agenda) + une routine matinale qui le rafraîchit. Chaque utilisateur reste sur son propre compte M365.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Groupe FIMAVI"
+  },
+  "keywords": ["cockpit", "microsoft365", "briefing", "routine", "priorites", "fimavi"]
+}
